@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, realpathSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, join } from "node:path";
+import { isFirstParty } from "./meta.ts";
 
 const REPO_ROOT = join(import.meta.dir, "..", "..");
 
@@ -69,6 +70,7 @@ export interface ModuleRef {
   version?: string;
   name: string;
   path: string;
+  firstParty?: boolean;
 }
 
 // "Mothership-Foo-v1.3-for-backers.pdf" -> id "foo@1.3"
@@ -89,10 +91,11 @@ export function moduleRef(path: string): ModuleRef {
   return { id: version ? `${slug}@${version}` : slug, slug, version, name, path };
 }
 
-export function listModules(): ModuleRef[] {
-  return listPdfs()
+export function listModules(opts: { all?: boolean } = {}): ModuleRef[] {
+  const mods = listPdfs()
     .filter((p) => coreBookOf(p) === null)
-    .map(moduleRef);
+    .map((p) => Object.assign(moduleRef(p), { firstParty: isFirstParty(p) }));
+  return opts.all ? mods : mods.filter((m) => m.firstParty);
 }
 
 function compareVersions(a = "", b = ""): number {

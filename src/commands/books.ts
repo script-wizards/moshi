@@ -14,16 +14,19 @@ function tryCore(book: CoreBook): string | null {
 }
 
 export function cmdBooks(args: string[]): void {
+  const all = args.includes("--all");
   const core = Object.fromEntries(CORE.map((b) => [b, tryCore(b)]));
-  const modules = listModules();
+  const modules = listModules({ all });
   const active = loadState().module?.id ?? null;
 
   const lines = ["Core books"];
   for (const b of CORE) lines.push(`  ${b.padEnd(10)} ${core[b] ?? "(not found)"}`);
-  lines.push("", `Modules (${modules.length})`);
-  for (const m of modules) lines.push(`${m.id === active ? "* " : "  "}${m.id}`);
-  if (modules.length === 0) {
-    lines.push(`  none found; searched: ${bookDirs().join(", ")}`);
+  lines.push("", `${all ? "All modules" : "First-party modules"} (${modules.length})`);
+  for (const m of modules) {
+    const mark = m.id === active ? "* " : "  ";
+    lines.push(`${mark}${m.id}${all && !m.firstParty ? "" : all ? "   (first-party)" : ""}`);
   }
+  if (modules.length === 0) lines.push(`  none found; searched: ${bookDirs().join(", ")}`);
+  if (!all) lines.push("", "moshi books --all  to include third-party PDFs");
   emit(args, { core, modules, active, searched: bookDirs() }, lines.join("\n"));
 }

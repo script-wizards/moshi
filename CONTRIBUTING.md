@@ -74,14 +74,26 @@ folders recursively, recognizes the two core books by filename, and treats
 every other PDF as a module with an id derived from its filename
 (`moduleRef`). `matchModule` resolves a query to one module.
 
-`src/pdf/extract.ts` shells out to `pdftotext -layout` and caches pages in
-`~/.cache/moshi/`. Parsers should take that fixed-width text as input, the way
-they do in dlmnwd, so a pdf.js emulation can feed the same parsers in the
-browser later. Keep Node-only APIs out of parsers.
+`src/pdf/extract.ts` shells out to `pdftotext -layout` and `pdfinfo`, and
+caches results in `~/.cache/moshi/`. Landscape pages are cropped into three
+panels (`extractPanels`) so trifold columns don't interleave. Parsers in
+`src/parse/` take that fixed-width text as input, the way they do in dlmnwd, so
+a pdf.js emulation can feed the same parsers in the browser later. Keep
+Node-only APIs out of parsers.
 
-`src/state.ts` owns the one machine-local state file. Running a module needs
-memory between commands (the active module now; clocks, casualties, and
-terminal switches later), and all of it goes there, never into the repo.
+`src/parse/sections.ts` turns panels into sections: numbered headers are
+locations, all-caps headers (after a blank line, or marked with `!`) are
+sections, and keyed paragraphs before a panel's first header are callouts.
+`src/parse/dtable.ts` reads die tables whose entries start with an all-caps
+name. `src/pdf/meta.ts` decides whether a PDF is first-party. None of them
+name anything from a specific book; they work from layout and labels only.
+
+`src/state.ts` owns everything machine-local: the active module, one session
+file per module, and a JSON-lines log beside it. `src/active.ts` loads the
+active module and wraps session edits (`withSession`); commands that change
+the session call `logEvent`. Module procedures (timers, encounter rolls) are
+not coded per module. The generic pieces (clocks, cast, flags, tables) are
+there so whoever runs the game can apply the book's procedures as written.
 
 ## Code conventions
 

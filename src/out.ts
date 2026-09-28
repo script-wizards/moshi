@@ -9,3 +9,9 @@ export function emit(args: string[], data: unknown, text: string): void {
 export function modTag(mod: number): string {
   return mod > 0 ? " [+]" : mod < 0 ? " [-]" : "";
 }
+
+export function localTime(iso: string, withDate = false): string {
+  const d = new Date(iso);
+  const hm = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+  return withDate ? `${d.toLocaleDateString("en-CA")} ${hm}` : hm;
+}
