@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+dist/
+
+# Licensed game content. Bring your own. NEVER commit these.
+# Drop (or symlink) your PDFs in ./books. The whole folder is ignored.
+books
+data
+*.pdf
+*.epub
+*.zip
+*.mp3
+*.wav
+*.ogg
+*.m4a
+
+# Derived extraction/index cache (machine-local, never shipped)
+.moshi-cache/
+*.db
+*.db-wal
+*.db-shm
+
+# Session/runtime state
+moshi-state.json
+
+# Playwright MCP scratch output
+.playwright-mcp/
+
+# OS / editor
+.DS_Store
+*.swp
